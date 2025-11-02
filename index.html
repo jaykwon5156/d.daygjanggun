@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#9333ea">
+    <link rel="icon" type="image/jpeg" href="icon.jpg">
+    <link rel="apple-touch-icon" href="icon.jpg">
+    <title>나의 다이어리 & 할일</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+            background: #f3e8ff;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: #9333ea;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: #9333ea;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #c084fc;
+            color: white;
+        }
+
+        .btn-accent {
+            background: #e9d5ff;
+            color: #9333ea;
+        }
+
+        .btn-warning {
+            background: #fbbf24;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav button {
+            background: #e9d5ff;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .calendar-nav h2 {
+            font-size: 18px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #6b7280;
+        }
+
+        .calendar-date {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .calendar-date:active {
+            transform: scale(0.9);
+        }
+
+        .calendar-date.has-diary {
+            background: #9333ea;
+            color: white;
+        }
+
+        .calendar-date.has-image {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .diary-area {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #e9d5ff;
+            border-radius: 12px;
+            font-size: 16px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .todo-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .todo-checkbox {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #9333ea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .todo-text.completed {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+
+        .todo-delete {
+            color: #ef4444;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9d5ff;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #9333ea;
+        }
+
+        .modal-content p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 2000;
+            display: none;
+            font-weight: bold;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .drawing-canvas {
+            border: 2px solid #e9d5ff;
+            border-radius: 12px;
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .color-option.active {
+            border-color: #9333ea;
+            transform: scale(1.2);
+        }
+
+        .theme-card {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .theme-card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .theme-icon {
+            font-size: 40px;
+        }
+
+        .theme-info h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .theme-info p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .streak-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #f59e0b;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            border: 2px solid #e9d5ff;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .back-btn {
+            background: #e9d5ff;
+            color: #9333ea;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1 id="headerTitle">📅 나의 다이어리</h1>
+            <div class="stats">
+                <div class="stat-box">
+                    <span>🎟️</span>
+                    <span id="ticketCount">0</span>
+                </div>
+                <div class="stat-box">
+                    <span>🔥</span>
+                    <span id="streakCount">0</span>일
+                </div>
+            </div>
+            <button class="btn btn-accent" onclick="showShop()">🛍️ 테마 상점</button>
+        </div>
+
+        <!-- 캘린더 뷰 -->
+        <div id="calendarView" class="content">
+            <div class="calendar-nav">
+                <button onclick="prevMonth()">◀</button>
+                <h2 id="currentMonth"></h2>
+                <button onclick="nextMonth()">▶</button>
+            </div>
+            <button class="btn btn-secondary" onclick="showTodoView()">→ 할일 목록 바로가기</button>
+            <div class="calendar" id="calendar"></div>
+        </div>
+
+        <!-- 다이어리 뷰 -->
+        <div id="diaryView" class="content hidden">
+            <button class="back-btn" onclick="showCalendarView()">← 캘린더로</button>
+            <h2 id="diaryDate" style="margin-bottom: 20px; text-align: center;"></h2>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="openDrawing()">🎨 그림 그리기</button>
+                <button class="btn btn-secondary" onclick="addPhoto()">📷 사진 추가</button>
+            </div>
+
+            <div id="imagePreview"></div>
+
+            <button class="btn btn-secondary" onclick="showTodoView()">→ 할일 목록으로</button>
+            
+            <textarea id="diaryText" class="diary-area" placeholder="오늘 하루를 기록해보세요..."></textarea>
+        </div>
+
+        <!-- 할일 뷰 -->
+        <div id="todoView" class="content hidden">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="back-btn" onclick="showCalendarView()">← 캘린더로</button>
+                <button class="back-btn" onclick="showDiaryView()">← 다이어리로</button>
+            </div>
+
+            <h2 style="text-align: center; margin-bottom: 20px;">할일 목록</h2>
+
+            <div id="streakBanner" class="streak-banner hidden"></div>
+
+            <div class="input-group">
+                <input type="text" id="todoInput" placeholder="할일을 입력하세요...">
+                <button class="btn btn-primary" onclick="addTodo()" style="width: auto;">추가</button>
+            </div>
+
+            <div id="todoList"></div>
+
+            <button class="btn btn-warning" onclick="drawFortune()">✨ 포춘 뽑기 (티켓 1개 사용)</button>
+        </div>
+
+        <!-- 테마 상점 뷰 -->
+        <div id="shopView" class="content hidden">
+            <button class="back-btn" onclick="showCalendarView()">← 돌아가기</button>
+            <h2 style="text-align: center; margin-bottom: 10px;">🛍️ 테마 상점</h2>
+            <p style="text-align: center; margin-bottom: 20px; color: #9333ea; font-weight: bold;">
+                보유 티켓: <span id="shopTicketCount">0</span>개 🎟️
+            </p>
+            <div id="themeList"></div>
+        </div>
+    </div>
+
+    <!-- 그림 그리기 모달 -->
+    <div id="drawingModal" class="modal">
+        <div class="modal-content" style="max-width: 95%; padding: 15px;">
+            <h3>🎨 그림 그리기</h3>
+            
+            <div class="color-picker" id="colorPicker"></div>
+            
+            <div style="margin: 15px 0;">
+                <label>굵기: <span id="thicknessValue">3</span>px</label>
+                <input type="range" id="thickness" min="1" max="10" value="3" 
+                       style="width: 100%;" oninput="updateThickness()">
+            </div>
+
+            <canvas id="drawingCanvas" class="drawing-canvas" width="350" height="350"></canvas>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn btn-danger" onclick="clearCanvas()">전체 지우기</button>
+                <button class="btn btn-success" onclick="saveDrawing()">저장</button>
+                <button class="btn" style="background: #6b7280; color: white;" onclick="closeDrawing()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 알림 -->
+    <div id="notification" class="notification"></div>
+
+    <script src="diary_app.js"></script>
+</body>
+</html>
